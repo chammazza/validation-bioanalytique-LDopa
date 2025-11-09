@@ -1,5 +1,4 @@
 
-
 plotly
 scipy
 reportlab
@@ -10,4 +9,4 @@ streamlit
 pandas
 numpy
 matplotlib
-
+fpdf
