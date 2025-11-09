@@ -225,40 +225,48 @@ with tabs[2]:
     else:
         r = st.session_state["res_df"]
 
-        # 1. Profil d'exactitude
+        # 1. PROFIL D'EXACTITUDE : recouvrement, tol_low, tol_high, incertitude
         fig, ax = plt.subplots(figsize=(8,4))
         ax.plot(r["Concentration_nominale"], r["Biais_rel (%)"]+100, 'o-', label="Recouvrement (%)")
-        if not r["Tol_low (β) [%]"].isna().all():
-            ax.plot(r["Concentration_nominale"], r["Tol_low (β) [%]"], 's--', label=f"Tol_low (β={beta_expect})")
-            ax.plot(r["Concentration_nominale"], r["Tol_high (β) [%]"], 's--', label=f"Tol_high (β={beta_expect})")
-        if not r["Uncert_low [%]"].isna().all():
-            ax.fill_between(r["Concentration_nominale"], r["Uncert_low [%]"], r["Uncert_high [%]"], alpha=0.25, label=f"Inc. (β={beta_uncert}, γ={gamma_uncert})")
-        ax.axhline(100 + lambda_accept, color='red', linestyle='--', label="Limite acceptabilité haute")
-        ax.axhline(100 - lambda_accept, color='red', linestyle='--', label="Limite acceptabilité basse")
+        ax.plot(r["Concentration_nominale"], r["Tol_low (β) [%]"]+100, 'g^--')
+        ax.plot(r["Concentration_nominale"], r["Tol_high (β) [%]"]+100, 'bv--')
+        ax.fill_between(r["Concentration_nominale"], r["Uncert_low [%]"]+100, r["Uncert_high [%]"]+100, alpha=0.25, color='lightgreen')
+        ax.axhline(100 + lambda_accept, color='red', linestyle='--')
+        ax.axhline(100 - lambda_accept, color='red', linestyle='--')
         ax.set_xscale('log')
         ax.set_ylim(80,120)
         ax.set_xlabel("Concentration nominale")
         ax.set_ylabel("%")
-        ax.set_title("Profil d'exactitude")
-        ax.legend()
+        ax.set_title("Profil d'exactitude complet")
         ax.grid(True)
         st.pyplot(fig)
+        st.markdown(f"""
+        **Légende :**
+        - ⚫ Recouvrement (%) = biais relatif + 100
+        - 🟩 Bande verte = incertitude (β={beta_uncert}, γ={gamma_uncert})
+        - 🟢 Tol_low/tol_high = limites tolérance (β={beta_expect})
+        - 🔴 Lignes rouges = limites acceptabilité ±λ ({lambda_accept}%)
+        """)
 
-        # 2. Profil d'incertitude
+        # 2. PROFIL D'INCERTITUDE
         fig_inc, ax_inc = plt.subplots(figsize=(8,4))
-        ax_inc.plot(r["Concentration_nominale"], r["Uncert_low [%]"], 'v--', color='green', label="Limite basse d'incertitude (%)")
-        ax_inc.plot(r["Concentration_nominale"], r["Uncert_high [%]"], '^--', color='blue', label="Limite haute d'incertitude (%)")
-        ax_inc.fill_between(r["Concentration_nominale"], r["Uncert_low [%]"], r["Uncert_high [%]"], alpha=0.25, color='lightgreen', label="Bande d'incertitude")
-        ax_inc.axhline(-lambda_accept, color='red', linestyle='--', label="Limite basse d'acceptabilité")
-        ax_inc.axhline(lambda_accept, color='red', linestyle='--', label="Limite haute d'acceptabilité")
+        ax_inc.plot(r["Concentration_nominale"], r["Uncert_low [%]"], 'v--', color='green')
+        ax_inc.plot(r["Concentration_nominale"], r["Uncert_high [%]"], '^--', color='blue')
+        ax_inc.fill_between(r["Concentration_nominale"], r["Uncert_low [%]"], r["Uncert_high [%]"], alpha=0.25, color='lightgreen')
+        ax_inc.axhline(-lambda_accept, color='red', linestyle='--')
+        ax_inc.axhline(lambda_accept, color='red', linestyle='--')
         ax_inc.set_xlabel("Concentration nominale")
         ax_inc.set_ylabel("Incertitude relative (%)")
         ax_inc.set_title("Profil d'incertitude de la méthode")
-        ax_inc.legend()
         ax_inc.grid(True)
         st.pyplot(fig_inc)
+        st.markdown(f"""
+        **Légende :**
+        - 🟩 Bande verte = incertitude [Uncert_low ; Uncert_high]
+        - 🔴 Lignes rouges = limites acceptabilité ±λ ({lambda_accept}%)
+        """)
 
-        # 3. Profil de précision (CV%)
+        # 3. PROFIL DE PRÉCISION
         fig_cv, ax_cv = plt.subplots(figsize=(8,4))
         ax_cv.plot(r["Concentration_nominale"], r["Répétabilité_CV (%)"], 's-', label="Répétabilité CV%")
         ax_cv.plot(r["Concentration_nominale"], r["Inter_CV (%)"], 'o-', label="Inter CV%")
@@ -266,10 +274,13 @@ with tabs[2]:
         ax_cv.set_xlabel("Concentration nominale")
         ax_cv.set_ylabel("CV (%)")
         ax_cv.set_title("Profil de précision")
-        ax_cv.legend()
         ax_cv.grid(True)
         st.pyplot(fig_cv)
-
+        st.markdown("""
+        **Légende :**
+        - Carrés = CV% répétabilité
+        - Cercles = CV% fidélité intermédiaire
+        """)
 
 with tabs[3]:
     st.header("🤖 Module de prédiction (biais & CV%)")
